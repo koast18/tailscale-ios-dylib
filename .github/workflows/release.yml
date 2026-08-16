@@ -40,8 +40,8 @@ jobs:
           TAG="${GITHUB_REF_NAME}"
           # Use one archive so GitHub asset names do not collide (several
           # directories contain files named libtailscale.h/libtailscale.dylib).
-          tar -czf "dist/tailscale-ios-dylib-${TAG}.tar.gz" -C dist .
+          tar -czf "tailscale-ios-dylib-${TAG}.tar.gz" -C dist .
           gh release create "$TAG" \
-            "dist/tailscale-ios-dylib-${TAG}.tar.gz" \
+            "tailscale-ios-dylib-${TAG}.tar.gz" \
             --title "Tailscale iOS dylib $TAG" \
             --notes "Proxy-only Tailscale embedded library built from this repository. See README.md for usage."

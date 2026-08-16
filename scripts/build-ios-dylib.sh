@@ -33,6 +33,7 @@ xcrun clang \
   -framework CoreFoundation \
   -framework Security \
   -o dist/ios/libtailscale.dylib \
+  "$ROOT/tailscale.c" \
   "$ROOT/libtailscale_ios.a"
 
 # --- Simulator dylibs (arm64 + x86_64, then lipo together) ---------------
@@ -46,6 +47,7 @@ xcrun clang \
   -framework CoreFoundation \
   -framework Security \
   -o dist/ios-sim/libtailscale_arm64.dylib \
+  "$ROOT/tailscale.c" \
   "$ROOT/libtailscale_ios_sim_arm64.a"
 
 xcrun clang \
@@ -58,6 +60,7 @@ xcrun clang \
   -framework CoreFoundation \
   -framework Security \
   -o dist/ios-sim/libtailscale_x86_64.dylib \
+  "$ROOT/tailscale.c" \
   "$ROOT/libtailscale_ios_sim_x86_64.a"
 
 lipo -create \
@@ -67,16 +70,23 @@ lipo -create \
 
 rm -f dist/ios-sim/libtailscale_arm64.dylib dist/ios-sim/libtailscale_x86_64.dylib
 
-# --- macOS dylib (c-shared is officially supported on darwin) -------------
-make libtailscale.so
-mv libtailscale.so dist/macos/libtailscale.dylib
+# --- macOS dylib (also built from the static archive + C wrapper) ---------
+make libtailscale.a
+MAC_SDK="$(xcrun --sdk macosx --show-sdk-path)"
+xcrun clang   -arch "$(uname -m)"   -isysroot "$MAC_SDK"   -mmacosx-version-min=15.0   -dynamiclib   -install_name @rpath/libtailscale.dylib   -Wl,-all_load   -framework CoreFoundation   -framework Security   -o dist/macos/libtailscale.dylib   "$ROOT/tailscale.c"   "$ROOT/libtailscale.a"
 
-# --- Headers and static archives alongside the dylibs ---------------------
-cp libtailscale.h dist/ios/libtailscale.h
+# --- Headers, C wrapper source, and static archives alongside the dylibs ---
+cp tailscale.h dist/ios/tailscale.h
+cp tailscale.c dist/ios/tailscale.c
+cp libtailscale.h dist/ios/libtailscale.h 2>/dev/null || true
 cp libtailscale_ios.a dist/ios/libtailscale_ios.a
-cp libtailscale.h dist/ios-sim/libtailscale.h
+cp tailscale.h dist/ios-sim/tailscale.h
+cp tailscale.c dist/ios-sim/tailscale.c
+cp libtailscale.h dist/ios-sim/libtailscale.h 2>/dev/null || true
 cp libtailscale_ios_sim.a dist/ios-sim/libtailscale_ios_sim.a 2>/dev/null || true
-cp libtailscale.h dist/macos/libtailscale.h
+cp tailscale.h dist/macos/tailscale.h
+cp tailscale.c dist/macos/tailscale.c
+cp libtailscale.h dist/macos/libtailscale.h 2>/dev/null || true
 
 echo
 echo "Built iOS/macOS dylibs under dist/:"

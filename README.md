@@ -46,7 +46,8 @@ Go **不支持** `-buildmode=c-shared` 在 `ios/arm64` 上直接生成 dylib。
 
 ```text
 .
-├── tailscale.go              # C 桥接层（基于 libtailscale 扩展，薄封装，不改 core）
+├── tailscale.go              # Go 桥接层（基于 libtailscale 扩展，薄封装，不改 core）
+├── tailscale.c               # C 友好名称包装层（tailscale_new / tailscale_set_proxy 等）
 ├── tailscale.h               # C 头文件（也由 go build 生成）
 ├── Makefile                  # 官方构建目标 + ios-dylib 目标
 ├── scripts/

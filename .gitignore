@@ -1,0 +1,20 @@
+# Build artifacts
+dist/
+libtailscale.so
+libtailscale.dylib
+libtailscale.a
+libtailscale.h
+libtailscale_*.a
+libtailscale_*.h
+libtailscale_*.dylib
+*.o
+
+# Local research clones (not part of this repository)
+/libtailscale/
+/tailscale-upstream/
+/tailscale-android/
+
+# macOS/Xcode
+.DS_Store
+**/xcuserdata/**
+**/*.xccheckout

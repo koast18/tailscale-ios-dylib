@@ -1,0 +1,51 @@
+name: build-ios-dylib
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Build iOS dylib / static archives / macOS dylib
+        run: make ios-dylib
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: tailscale-ios-dylib
+          path: |
+            dist/**
+            tailscale.h
+
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -eux
+          TAG="${GITHUB_REF_NAME}"
+          gh release create "$TAG" \
+            dist/ios/libtailscale.dylib \
+            dist/ios/libtailscale_ios.a \
+            dist/ios/libtailscale.h \
+            dist/ios-sim/libtailscale.dylib \
+            dist/ios-sim/libtailscale_ios_sim.a \
+            dist/ios-sim/libtailscale.h \
+            dist/macos/libtailscale.dylib \
+            dist/macos/libtailscale.h \
+            --title "Tailscale iOS dylib $TAG" \
+            --notes "Proxy-only Tailscale embedded library built from this repository. See README.md for usage."

@@ -23,6 +23,12 @@ jobs:
       - name: Build iOS dylib / static archives / macOS dylib
         run: make ios-dylib
 
+      - name: Verify dylib exports
+        run: |
+          set -eux
+          nm -gU dist/ios/libtailscale.dylib | grep -E ' _tailscale_(new|set_proxy|set_disable_p2p|get_status_json|edit_prefs_json)$'
+          nm -gU dist/ios-sim/libtailscale.dylib | grep -E ' _tailscale_(new|set_proxy|set_disable_p2p|get_status_json|edit_prefs_json)$'
+
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:

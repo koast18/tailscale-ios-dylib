@@ -33,7 +33,6 @@ xcrun clang \
   -framework CoreFoundation \
   -framework Security \
   -o dist/ios/libtailscale.dylib \
-  "$ROOT/tailscale.c" \
   "$ROOT/libtailscale_ios.a"
 
 # --- Simulator dylibs (arm64 + x86_64, then lipo together) ---------------
@@ -47,7 +46,6 @@ xcrun clang \
   -framework CoreFoundation \
   -framework Security \
   -o dist/ios-sim/libtailscale_arm64.dylib \
-  "$ROOT/tailscale.c" \
   "$ROOT/libtailscale_ios_sim_arm64.a"
 
 xcrun clang \
@@ -60,7 +58,6 @@ xcrun clang \
   -framework CoreFoundation \
   -framework Security \
   -o dist/ios-sim/libtailscale_x86_64.dylib \
-  "$ROOT/tailscale.c" \
   "$ROOT/libtailscale_ios_sim_x86_64.a"
 
 lipo -create \
@@ -73,7 +70,7 @@ rm -f dist/ios-sim/libtailscale_arm64.dylib dist/ios-sim/libtailscale_x86_64.dyl
 # --- macOS dylib (also built from the static archive + C wrapper) ---------
 make libtailscale.a
 MAC_SDK="$(xcrun --sdk macosx --show-sdk-path)"
-xcrun clang   -arch "$(uname -m)"   -isysroot "$MAC_SDK"   -mmacosx-version-min=15.0   -dynamiclib   -install_name @rpath/libtailscale.dylib   -Wl,-all_load   -framework CoreFoundation   -framework Security   -o dist/macos/libtailscale.dylib   "$ROOT/tailscale.c"   "$ROOT/libtailscale.a"
+xcrun clang   -arch "$(uname -m)"   -isysroot "$MAC_SDK"   -mmacosx-version-min=15.0   -dynamiclib   -install_name @rpath/libtailscale.dylib   -Wl,-all_load   -framework CoreFoundation   -framework Security   -o dist/macos/libtailscale.dylib   "$ROOT/libtailscale.a"
 
 # --- Headers, C wrapper source, and static archives alongside the dylibs ---
 cp tailscale.h dist/ios/tailscale.h

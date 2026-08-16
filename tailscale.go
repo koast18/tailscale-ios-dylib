@@ -925,6 +925,7 @@ func setPrefFieldFromJSON(f reflect.Value, raw json.RawMessage) error {
 	default:
 		return fmt.Errorf("unsupported field kind %s", f.Kind())
 	}
+	return nil
 }
 
 //export TsnetEditPrefsJSON

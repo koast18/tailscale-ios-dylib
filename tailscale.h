@@ -105,13 +105,23 @@ extern int tailscale_get_param(tailscale sd, const char* key, char* buf, size_t 
 // tailscale_get_status_json writes the current LocalAPI status as JSON.
 extern int tailscale_get_status_json(tailscale sd, char* buf, size_t buflen);
 
+// tailscale_get_full_status_json writes the full LocalAPI status (including
+// peers and exit-node options) as JSON.
+extern int tailscale_get_full_status_json(tailscale sd, char* buf, size_t buflen);
+
+// tailscale_set_exit_node selects or clears the Tailscale exit node.
+//
+// stable_id is a peer StableNodeID from the full status JSON. Pass empty string
+// or enable=0 to clear the exit node.
+extern int tailscale_set_exit_node(tailscale sd, const char* stable_id, int enable);
+
 // tailscale_get_prefs_json writes the current LocalAPI preferences as JSON.
 extern int tailscale_get_prefs_json(tailscale sd, char* buf, size_t buflen);
 
 // tailscale_edit_prefs_json applies a JSON object of LocalAPI preferences.
 //
-// Route, exit node, and firewall-related fields are intentionally rejected by
-// this build so the embedded library stays proxy-only.
+// Route and firewall-related fields are intentionally rejected by this build;
+// exit-node fields are allowed so the console can switch exit nodes.
 extern int tailscale_edit_prefs_json(tailscale sd, const char* json);
 
 // tailscale_set_logfd instructs the tailscale instance to write logs to fd.

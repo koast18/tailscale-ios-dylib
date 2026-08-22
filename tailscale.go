@@ -13,6 +13,7 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"net/netip"
 	"net/url"
 	"os"
 	"reflect"
@@ -28,6 +29,7 @@ import (
 	"tailscale.com/hostinfo"
 	"tailscale.com/ipn"
 	"tailscale.com/net/tshttpproxy"
+	"tailscale.com/tailcfg"
 	"tailscale.com/tsnet"
 	"tailscale.com/types/logger"
 )
@@ -865,21 +867,69 @@ func TsnetGetPrefsJSON(sd C.int, buf *C.char, buflen C.size_t) C.int {
 	return writeCString(buf, buflen, string(b))
 }
 
+//export TsnetGetFullStatusJSON
+func TsnetGetFullStatusJSON(sd C.int, buf *C.char, buflen C.size_t) C.int {
+	s := getServer(sd)
+	if s == nil {
+		return C.EBADF
+	}
+	lc, err := s.s.LocalClient()
+	if err != nil {
+		return s.recErr(err)
+	}
+	st, err := lc.Status(context.Background())
+	if err != nil {
+		return s.recErr(err)
+	}
+	b, err := json.Marshal(st)
+	if err != nil {
+		return s.recErr(err)
+	}
+	return writeCString(buf, buflen, string(b))
+}
+
+//export TsnetSetExitNode
+func TsnetSetExitNode(sd C.int, stableID *C.char, enable C.int) C.int {
+	s := getServer(sd)
+	if s == nil {
+		return C.EBADF
+	}
+	id := ""
+	if stableID != nil {
+		id = C.GoString(stableID)
+	}
+	lc, err := s.s.LocalClient()
+	if err != nil {
+		return s.recErr(err)
+	}
+	mp := &ipn.MaskedPrefs{
+		ExitNodeIDSet: true,
+		ExitNodeIPSet: true,
+	}
+	if cIntToBool(enable) && id != "" {
+		mp.ExitNodeID = tailcfg.StableNodeID(id)
+		mp.ExitNodeIP = netip.Addr{}
+	} else {
+		mp.ExitNodeID = ""
+		mp.ExitNodeIP = netip.Addr{}
+	}
+	if _, err := lc.EditPrefs(context.Background(), mp); err != nil {
+		return s.recErr(err)
+	}
+	return 0
+}
+
 // blockedPrefFields are route/firewall/admin fields that do not belong in a
 // proxy-only embedded Tailscale. Sending one of these to TsnetEditPrefsJSON is
 // rejected instead of silently changing routing or firewall behavior.
 var blockedPrefFields = map[string]bool{
-	"RouteAll":               true,
-	"ExitNodeID":             true,
-	"ExitNodeIP":             true,
-	"AutoExitNode":           true,
-	"ExitNodeAllowLANAccess": true,
-	"AdvertiseRoutes":        true,
-	"NoSNAT":                 true,
-	"NoStatefulFiltering":    true,
-	"NetfilterMode":          true,
-	"NetfilterKind":          true,
-	"OperatorUser":           true,
+	"RouteAll":            true,
+	"AdvertiseRoutes":     true,
+	"NoSNAT":              true,
+	"NoStatefulFiltering": true,
+	"NetfilterMode":       true,
+	"NetfilterKind":       true,
+	"OperatorUser":        true,
 }
 
 func setPrefFieldFromJSON(f reflect.Value, raw json.RawMessage) error {

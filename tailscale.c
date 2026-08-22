@@ -30,6 +30,8 @@ extern int TsnetSetDisableP2P(int sd, int disable);
 extern int TsnetSetParam(int sd, char* key, char* value);
 extern int TsnetGetParam(int sd, char* key, char* buf, size_t buflen);
 extern int TsnetGetStatusJSON(int sd, char* buf, size_t buflen);
+extern int TsnetGetFullStatusJSON(int sd, char* buf, size_t buflen);
+extern int TsnetSetExitNode(int sd, char* stableID, int enable);
 extern int TsnetGetPrefsJSON(int sd, char* buf, size_t buflen);
 extern int TsnetEditPrefsJSON(int sd, char* jsonStr);
 
@@ -122,6 +124,14 @@ int tailscale_get_status_json(tailscale sd, char* buf, size_t buflen) {
 
 int tailscale_get_prefs_json(tailscale sd, char* buf, size_t buflen) {
 	return TsnetGetPrefsJSON(sd, buf, buflen);
+}
+
+int tailscale_get_full_status_json(tailscale sd, char* buf, size_t buflen) {
+	return TsnetGetFullStatusJSON(sd, buf, buflen);
+}
+
+int tailscale_set_exit_node(tailscale sd, const char* stable_id, int enable) {
+	return TsnetSetExitNode(sd, (char*)stable_id, enable);
 }
 
 int tailscale_edit_prefs_json(tailscale sd, const char* json) {

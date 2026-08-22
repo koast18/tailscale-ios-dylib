@@ -18,3 +18,6 @@ libtailscale_*.dylib
 .DS_Store
 **/xcuserdata/**
 **/*.xccheckout
+
+# Cloned working copy used for integration work
+/livecontainer-kingcard-proxy/
